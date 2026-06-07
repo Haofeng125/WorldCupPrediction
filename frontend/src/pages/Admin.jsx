@@ -73,13 +73,18 @@ function BettingManager() {
     loadEvents();
   };
 
-  const settleEvent = async (id, optionId) => {
-    await api.post(`/betting/events/${id}/settle`, { winning_option_id: optionId });
+  const settleEvent = async (id, optionId, isResettle) => {
+    if (isResettle && !confirm('该投注已结算。修改获胜结果会撤销之前的派彩、并按新结果重新计算所有玩家余额。确定修改？')) return;
+    const res = await api.post(`/betting/events/${id}/settle`, { winning_option_id: optionId });
+    setMessage(res.data.message);
     loadEvents();
   };
 
-  const deleteEvent = async (id) => {
-    if (!confirm('确定删除？下注金额将退还给玩家')) return;
+  const deleteEvent = async (id, isSettled) => {
+    const msg = isSettled
+      ? '该投注已结算。删除会撤销派彩并把本金退还给所有玩家。确定删除？'
+      : '确定删除？下注金额将退还给玩家';
+    if (!confirm(msg)) return;
     await api.delete(`/betting/events/${id}`);
     loadEvents();
   };
@@ -228,13 +233,12 @@ function BettingManager() {
                 {event.status === 'open' && (
                   <button onClick={() => closeEvent(event.id)} className="btn-green !py-1 !px-3 text-xs">截止</button>
                 )}
-                {event.status !== 'settled' && (
-                  <button onClick={() => deleteEvent(event.id)} className="btn-danger !py-1 !px-3 text-xs">删除</button>
-                )}
+                <button onClick={() => deleteEvent(event.id, event.status === 'settled')} className="btn-danger !py-1 !px-3 text-xs">删除</button>
               </div>
             </div>
             <div className="text-xs text-green-400 mb-3">
               截止：{new Date(event.deadline).toLocaleString('zh-CN')}
+              {event.status === 'settled' && <span className="text-gold ml-2">· 已结算（点 ✓ 可修改获胜结果）</span>}
             </div>
             <div className="flex flex-wrap gap-2">
               {event.options?.map((opt) => (
@@ -245,9 +249,14 @@ function BettingManager() {
                 }`}>
                   <span>{opt.label}</span>
                   <span className="text-gold text-xs">({opt.odds})</span>
-                  {(event.status === 'open' || event.status === 'closed') && event.status !== 'settled' && (
-                    <button onClick={() => settleEvent(event.id, opt.id)} className="text-xs text-gold hover:text-yellow-300 ml-1" title="选为获胜">✓</button>
+                  {event.winning_option_id !== opt.id && (
+                    <button
+                      onClick={() => settleEvent(event.id, opt.id, event.status === 'settled')}
+                      className="text-xs text-gold hover:text-yellow-300 ml-1"
+                      title={event.status === 'settled' ? '改为获胜' : '选为获胜'}
+                    >✓</button>
                   )}
+                  {event.winning_option_id === opt.id && <span className="text-xs">🏆</span>}
                 </div>
               ))}
             </div>

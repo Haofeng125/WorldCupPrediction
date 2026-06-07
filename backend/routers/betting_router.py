@@ -138,12 +138,14 @@ def settle_event(event_id: int, req: SettleEventRequest, admin: User = Depends(r
     event = db.query(BettingEvent).options(joinedload(BettingEvent.user_bets)).filter(BettingEvent.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="投注事件不存在")
-    if event.status == BetStatus.SETTLED.value:
-        raise HTTPException(status_code=400, detail="该投注已结算")
 
     winning_option = db.query(BettingOption).filter(BettingOption.id == req.winning_option_id).first()
     if not winning_option or winning_option.event_id != event_id:
         raise HTTPException(status_code=400, detail="无效的获胜选项")
+
+    resettled = event.status == BetStatus.SETTLED.value
+    if resettled:
+        _reverse_settlement(event, db)
 
     event.status = BetStatus.SETTLED.value
     event.winning_option_id = req.winning_option_id
@@ -161,14 +163,18 @@ def settle_event(event_id: int, req: SettleEventRequest, admin: User = Depends(r
             bet.payout = 0
 
     db.commit()
-    return {"message": "投注已结算"}
+    return {"message": "结果已修改并重新结算" if resettled else "投注已结算"}
 
 
 @router.delete("/events/{event_id}")
 def delete_event(event_id: int, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
-    event = db.query(BettingEvent).filter(BettingEvent.id == event_id).first()
+    event = db.query(BettingEvent).options(joinedload(BettingEvent.user_bets)).filter(BettingEvent.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="投注事件不存在")
+
+    # If already settled, undo the payouts first so balances are correct before refunding stakes
+    if event.status == BetStatus.SETTLED.value:
+        _reverse_settlement(event, db)
 
     user_bets = db.query(UserBet).filter(UserBet.event_id == event_id).all()
     for bet in user_bets:
@@ -238,6 +244,22 @@ def my_bets(user: User = Depends(get_current_user), db: Session = Depends(get_db
         }
         for b in bets
     ]
+
+
+def _reverse_settlement(event: BettingEvent, db: Session):
+    """Undo a settled event's payouts, returning all its bets to the unsettled state.
+    Winners' payouts are subtracted back from their balance; losers are untouched.
+    Note: loan auto-repay that may have triggered on the original settlement is not
+    reconstructed (rare edge case in a virtual-currency game)."""
+    for bet in event.user_bets:
+        if bet.won and bet.payout:
+            user = db.query(User).filter(User.id == bet.user_id).first()
+            if user:
+                user.balance -= bet.payout
+        bet.won = None
+        bet.payout = 0.0
+    event.winning_option_id = None
+    event.settled_at = None
 
 
 def _check_auto_repay(user: User, db: Session):
