@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1b5e20;
+  --color-primary-light: #2e7d32;
+  --color-primary-dark: #0d3311;
+  --color-gold: #ffd700;
+  --color-gold-dark: #c7a600;
+  --color-pitch: #388e3c;
+  --color-pitch-light: #4caf50;
+  --color-dark-bg: #0a1f0d;
+  --color-card-bg: #112a14;
+  --color-card-border: #1b5e20;
+  --color-success: #66bb6a;
+  --color-danger: #ef5350;
+  --color-warning: #ffa726;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #0a1f0d 0%, #112a14 50%, #0d2818 100%);
+  color: #e8f5e9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a1f0d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1b5e20;
+  border-radius: 4px;
+}
+
+.football-pattern {
+  background-image: radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(56, 142, 60, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(255, 215, 0, 0.02) 0%, transparent 50%);
+}
+
+.glass-card {
+  background: rgba(17, 42, 20, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(27, 94, 32, 0.5);
+  border-radius: 16px;
+}
+
+.gold-glow {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.15), 0 0 40px rgba(255, 215, 0, 0.05);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #ffd700, #c7a600);
+  color: #0a1f0d;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 24px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #ffe44d, #ffd700);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.btn-gold:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-green {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  color: #e8f5e9;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 24px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.btn-green:hover {
+  background: linear-gradient(135deg, #388e3c, #2e7d32);
+  border-color: rgba(76, 175, 80, 0.6);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #c62828, #b71c1c);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 24px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #e53935, #c62828);
+}
+
+input, select, textarea {
+  background: rgba(10, 31, 13, 0.8);
+  border: 1px solid rgba(27, 94, 32, 0.5);
+  color: #e8f5e9;
+  border-radius: 10px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.3s;
+  font-size: 0.95rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #ffd700;
+}
+
+input::placeholder {
+  color: rgba(232, 245, 233, 0.4);
+}
+
+.tab-active {
+  background: linear-gradient(135deg, #ffd700, #c7a600) !important;
+  color: #0a1f0d !important;
+  font-weight: 700 !important;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.flag-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.trophy-icon::before {
+  content: "🏆";
+}
